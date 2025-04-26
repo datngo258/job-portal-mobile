@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+import cloudinary
+import cloudinary.uploader
+from cloudinary.utils import cloudinary_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,7 +30,12 @@ SECRET_KEY = 'django-insecure-w-e10l@656_)ay7!3ec5$=_9!)(au*dz(llthqs3^ximi)tj!y
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
+cloudinary.config(
+    cloud_name = "dr2mxhzts",
+    api_key = "731497689846592",
+    api_secret = "v3DutGG9pM3p6RicrWec1Zkm6Uk", # Click 'View API Keys' above to copy your API secret
+    secure=True
+)
 
 # Application definition
 
@@ -42,8 +50,10 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'drf_yasg',
-    'ckeditor',
-    'ckeditor_uploader'
+    'django_ckeditor_5',
+    'ckeditor_uploader',
+    'cloudinary',
+'oauth2_provider',
 ]
 CKEDITOR_UPLOAD_PATH = "images/avatar/"
 MEDIA_URL = '/media/'
@@ -84,10 +94,15 @@ WSGI_APPLICATION = 'job_portal_backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'job_portal_mobile',  # Tên database
+        'USER': 'root',  # Tên user của MySQL
+        'PASSWORD': 'ngodinhdat12345',  # Mật khẩu của MySQL (có thể không đúng)
+        'HOST': 'localhost',                  # Máy chủ (để trống nghĩa là localhost)
+        'PORT': '3306',  # Mặc định là localhost
     }
 }
+
 
 
 # Password validation
@@ -137,11 +152,18 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
-    ],
+    # 'DEFAULT_AUTHENTICATION_CLASSES': [
+    #     'rest_framework.authentication.TokenAuthentication',
+    #     'rest_framework.authentication.SessionAuthentication',
+    # ]
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+    )
+    ,
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
 }
+
+CLIENT_ID = 'qaWKPoLbth5ZchNNBnMzu6brNdWec9qO1Ve57FL9'
+CLIENT_SECRET = '9VQ35JMViBud6jGUF0vgTxKwqsSz6baqw9DdaHP1z1TjR5PFQkWQRavazrgGTjAuo6TDqlsLJvjMFpFN7S1Q15qb7ef25daj8X03UJdeBQOnYqDVkmeFxLT5Uq5CQ8nr'

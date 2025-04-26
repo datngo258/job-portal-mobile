@@ -1,9 +1,10 @@
 from django.shortcuts import render
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, permissions, status, parsers, generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 from .models import (
     Company, CompanyImage, Job, Application,
     Review, ChatMessage, Follow
@@ -13,8 +14,7 @@ from .serializers import (
     JobSerializer, ApplicationSerializer, ReviewSerializer,
     ChatMessageSerializer, FollowSerializer
 )
-from .permissions import IsAdminOrReadOnly, IsCompanyOwner, IsApplicationOwner
-
+from .permissions import IsAdminOrReadOnly, IsCompanyOwner, IsApplicationOwner, IsAdmin , IsEmployerAndOwner , IsEmployer
 User = get_user_model()
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -43,10 +43,10 @@ class CompanyViewSet(viewsets.ModelViewSet):
             CompanyImage.objects.create(company=company, image=image)
         return Response(status=status.HTTP_201_CREATED)
 
+# TÌM KIẾM
 class JobViewSet(viewsets.ModelViewSet):
     queryset = Job.objects.all()
     serializer_class = JobSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         queryset = Job.objects.all()
@@ -66,15 +66,91 @@ class JobViewSet(viewsets.ModelViewSet):
 
         return queryset
 
+    def get_permissions(self):
+        if self.action == 'create':
+            return [permissions.IsAuthenticated(), IsEmployer()]
+        elif self.action in ['update', 'partial_update', 'destroy']:
+            return [permissions.IsAuthenticated(), IsEmployerAndOwner()]
+        return [permissions.IsAuthenticated()]
+class AdminJobViewSet(viewsets.ViewSet):
+    permission_classes = [permissions.IsAuthenticated, IsAdmin]
+    serializer_class = JobSerializer
+
+    def list(self, request):
+        try:
+            jobs = Job.objects.all()
+            serializer = JobSerializer(jobs, many=True)
+            return Response({
+                'status': 'success',
+                'data': serializer.data
+            })
+        except Exception as e:
+            return Response({
+                'status': 'error',
+                'message': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def create(self, request):
+        try:
+            serializer = JobSerializer(data=request.data)
+            if serializer.is_valid():
+                job = serializer.save()
+                return Response({
+                    'status': 'success',
+                    'data': JobSerializer(job).data
+                }, status=status.HTTP_201_CREATED)
+            return Response({
+                'status': 'error',
+                'errors': serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({
+                'status': 'error',
+                'message': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def update(self, request, pk=None):
+        try:
+            job = Job.objects.get(pk=pk)
+            serializer = JobSerializer(job, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({
+                    'status': 'success',
+                    'data': serializer.data
+                })
+            return Response({
+                'status': 'error',
+                'errors': serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+        except Job.DoesNotExist:
+            return Response({
+                'status': 'error',
+                'message': 'Job not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+    def destroy(self, request, pk=None):
+        try:
+            job = Job.objects.get(pk=pk)
+            job.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Job.DoesNotExist:
+            return Response({
+                'status': 'error',
+                'message': 'Job not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+
 class ApplicationViewSet(viewsets.ModelViewSet):
     queryset = Application.objects.all()
     serializer_class = ApplicationSerializer
     permission_classes = [permissions.IsAuthenticated]
-
     def get_queryset(self):
-        if self.request.user.user_type == 'employer':
-            return Application.objects.filter(job__company__user=self.request.user)
-        return Application.objects.filter(candidate=self.request.user)
+        user = self.request.user
+        if user.user_type == 'admin':
+            return Application.objects.all()
+        elif user.user_type == 'employer':
+            return Application.objects.filter(job__company__user=user)
+        return Application.objects.filter(candidate=user)
 
     @action(detail=True, methods=['post'])
     def update_status(self, request, pk=None):
@@ -98,8 +174,8 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return ChatMessage.objects.filter(
-            models.Q(sender=self.request.user) |
-            models.Q(receiver=self.request.user)
+            Q(sender=self.request.user) |
+            Q(receiver=self.request.user)
         ).order_by('created_at')
 
 class FollowViewSet(viewsets.ModelViewSet):

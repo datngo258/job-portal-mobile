@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     UserViewSet, CompanyViewSet, JobViewSet,
     ApplicationViewSet, ReviewViewSet, ChatMessageViewSet,
-    FollowViewSet
+    FollowViewSet, AdminJobViewSet
 )
 
 router = DefaultRouter()
@@ -14,6 +14,7 @@ router.register(r'applications', ApplicationViewSet)
 router.register(r'reviews', ReviewViewSet)
 router.register(r'chat', ChatMessageViewSet)
 router.register(r'follows', FollowViewSet)
+router.register(r'admin/jobs', AdminJobViewSet, basename='admin-jobs')
 
 urlpatterns = [
     path('', include(router.urls)),

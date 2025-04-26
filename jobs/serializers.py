@@ -13,6 +13,15 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('id', 'username', 'email', 'user_type', 'avatar', 
                  'phone_number', 'is_verified', 'created_at')
         read_only_fields = ('is_verified', 'created_at')
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
+        def create(self, validated_data):
+            password = validated_data.pop('password')
+            user = User(**validated_data)
+            user.set_password(password)
+            user.save()
+            return user
 
 class CompanyImageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -38,6 +47,7 @@ class JobSerializer(serializers.ModelSerializer):
                  'salary_min', 'salary_max', 'job_type', 'location',
                  'latitude', 'longitude', 'working_hours', 'is_active',
                  'created_at', 'updated_at')
+        read_only_fields = ('created_at', 'updated_at')
 
 class ApplicationSerializer(serializers.ModelSerializer):
     job = JobSerializer(read_only=True)

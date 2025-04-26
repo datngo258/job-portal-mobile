@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
 from cloudinary.models import CloudinaryField
+from jobs.models import Job
+
 class User(AbstractUser):
     ROLE_CHOICES = [
         ('admin', 'Admin'),
@@ -22,11 +24,9 @@ class User(AbstractUser):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', 'role']
-
     def __str__(self):
         return f"{self.username} ({self.role})"
+
 class Admin(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     ADMIN_LEVEL_CHOICES = [
@@ -58,11 +58,11 @@ class Company(models.Model):
 
     def __str__(self):
         return self.name
+
 class CompanyImage(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='images')
     image = models.ImageField(upload_to='company_images/')
     created_at = models.DateTimeField(auto_now_add=True)
-
 
 class Employer(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
@@ -89,30 +89,9 @@ class Candidate(models.Model):
 
     def __str__(self):
         return self.user.username
-class JobPosting(models.Model):
-    employer = models.ForeignKey(Employer, on_delete=models.CASCADE)
-    company = models.ForeignKey(Company, on_delete=models.CASCADE)
-    title = models.CharField(max_length=255)
-    description = models.TextField()
-    requirements = models.TextField()
-    salary_range = models.CharField(max_length=100)
-    location = models.CharField(max_length=255)
-    latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True, blank=True)
-    longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True, blank=True)
-    work_schedule = models.TextField()
-    STATUS_CHOICES = [
-        ('open', 'Open'),
-        ('closed', 'Closed'),
-    ]
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.title
 
 class JobApplication(models.Model):
-    job = models.ForeignKey(JobPosting, on_delete=models.CASCADE)
+    job = models.ForeignKey(Job, on_delete=models.CASCADE)
     candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE)
     cover_letter = models.TextField(null=True, blank=True)
     STATUS_CHOICES = [

@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
+from cloudinary.models import  CloudinaryField
 
 class CustomUser(AbstractUser):
     USER_TYPE_CHOICES = (
@@ -9,12 +10,12 @@ class CustomUser(AbstractUser):
         ('employer', 'Employer'),
         ('candidate', 'Candidate'),
     )
-
     user_type = models.CharField(max_length=10, choices=USER_TYPE_CHOICES)
-    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
+    avatar = CloudinaryField('avatar', null=True, blank=True)
     phone_number = models.CharField(max_length=15, null=True, blank=True)
     is_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
+
 class Company(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='company')
     name = models.CharField(max_length=255)
@@ -58,6 +59,8 @@ class Job(models.Model):
     def __str__(self):
         return f"{self.title} at {self.company.name}"
 
+
+# đơn ứng tuyển.
 class Application(models.Model):
     STATUS_CHOICES = (
         ('pending', 'Pending'),
