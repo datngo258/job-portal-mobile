@@ -9,19 +9,20 @@ User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = CustomUser
-        fields = ('id', 'username', 'email', 'user_type', 'avatar', 
-                 'phone_number', 'is_verified', 'created_at')
+        model = User
+        fields = ('id', 'username', 'email', 'user_type', 'avatar',
+                  'phone_number', 'is_verified', 'created_at', 'password')
         read_only_fields = ('is_verified', 'created_at')
         extra_kwargs = {
-            'password': {'write_only': True}
+            'password': {'write_only': True}  # Chỉ có thể ghi mật khẩu, không thể đọc
         }
-        def create(self, validated_data):
-            password = validated_data.pop('password')
-            user = User(**validated_data)
-            user.set_password(password)
-            user.save()
-            return user
+
+    def create(self, validated_data):
+        password = validated_data.pop('password')  # Lấy mật khẩu từ dữ liệu đã xác thực
+        user = User(**validated_data)  # Tạo đối tượng User
+        user.set_password(password)  # Mã hóa mật khẩu
+        user.save()  # Lưu user vào cơ sở dữ liệu
+        return user
 
 class CompanyImageSerializer(serializers.ModelSerializer):
     class Meta:

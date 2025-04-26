@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework import viewsets, permissions, status, parsers, generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -16,20 +17,51 @@ from .serializers import (
 )
 from .permissions import IsAdminOrReadOnly, IsCompanyOwner, IsApplicationOwner, IsAdmin , IsEmployerAndOwner , IsEmployer
 User = get_user_model()
-
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.DestroyAPIView, generics.UpdateAPIView, generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAdminUser]
+    parser_classes = [parsers.MultiPartParser, FormParser, JSONParser]  # Cho phép upload file
 
-    @action(detail=False, methods=['post'])
-    def register(self, request):
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get_permissions(self):
+        if self.action == 'current_user':
+            return [permissions.IsAuthenticated()]  # Phải đăng nhập để xem thông tin của chính mình
+        elif self.action == 'destroy' or self.action == 'list':
+            return [permissions.IsAdminUser()]  # Chỉ admin mới có quyền xóa hoặc xem danh sách user
+        elif self.action in ['update', 'partial_update']:
+            return [permissions.IsAuthenticated()]  # Phải đăng nhập để cập nhật thông tin user
+        return [permissions.AllowAny()]  # Cho phép bất kỳ ai thực hiện các hành động khác
 
+    @action(detail=False, methods=['get'], url_name='current_user')
+    def current_user(self, request):
+        """ Lấy thông tin của người dùng hiện tại (yêu cầu phải đăng nhập) """
+        return Response(UserSerializer(request.user).data)
+
+    def update(self, request, *args, **kwargs):
+        user = self.get_object()
+        if request.user.is_staff or request.user == user:
+            serializer = self.get_serializer(user, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
+        else:
+            return Response({"detail": "Bạn không có quyền sửa người dùng này."}, status=403)
+
+    def partial_update(self, request, *args, **kwargs):
+        user = self.get_object()
+        if request.user.is_staff or request.user == user:
+            serializer = self.get_serializer(user, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
+        else:
+            return Response({"detail": "Bạn không có quyền sửa người dùng này."}, status=403)
+
+    def destroy(self, request, *args, **kwargs):
+        """ Xóa người dùng (chỉ admin mới có quyền) """
+        user = self.get_object()  # Lấy đối tượng user dựa trên ID
+        if request.user.is_staff:
+            return super().destroy(request, *args, **kwargs)
+        return Response({"detail": "Bạn không có quyền xóa người dùng này."}, status=403)
 class CompanyViewSet(viewsets.ModelViewSet):
     queryset = Company.objects.all()
     serializer_class = CompanySerializer

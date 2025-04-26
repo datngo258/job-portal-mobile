@@ -162,7 +162,12 @@ REST_FRAMEWORK = {
     ,
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
-    ],
+    ]
+    ,
+    # 'DEFAULT_AUTHENTICATION_CLASSES': (
+    #     'rest_framework_simplejwt.authentication.JWTAuthentication',
+    # )
+
 }
 
 CLIENT_ID = 'qaWKPoLbth5ZchNNBnMzu6brNdWec9qO1Ve57FL9'

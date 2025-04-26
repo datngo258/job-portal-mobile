@@ -39,3 +39,5 @@ class IsEmployerAndOwner(permissions.BasePermission):
 class IsEmployer(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user.user_type == 'employer'
+
+

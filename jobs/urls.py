@@ -5,6 +5,10 @@ from .views import (
     ApplicationViewSet, ReviewViewSet, ChatMessageViewSet,
     FollowViewSet, AdminJobViewSet
 )
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
@@ -18,4 +22,6 @@ router.register(r'admin/jobs', AdminJobViewSet, basename='admin-jobs')
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),  # Đăng nhập
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  # Làm mới token
 ] 

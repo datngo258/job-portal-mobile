@@ -99,6 +99,8 @@ class ChatMessage(models.Model):
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
 
+    class Meta :
+        unique_together = ('sender', 'receiver')
 class Follow(models.Model):
     candidate = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='following')
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='followers')
