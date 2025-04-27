@@ -7,7 +7,7 @@ from cloudinary.models import  CloudinaryField
 class CustomUser(AbstractUser):
     USER_TYPE_CHOICES = (
         ('admin', 'Admin'),
-        ('employer', 'Employer'),
+            ('employer', 'Employer'),
         ('candidate', 'Candidate'),
     )
     user_type = models.CharField(max_length=10, choices=USER_TYPE_CHOICES)
@@ -68,7 +68,6 @@ class Application(models.Model):
         ('rejected', 'Rejected'),
         ('completed', 'Completed'),
     )
-    
     job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='applications')
     candidate = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='applications')
     cv = models.FileField(upload_to='cvs/')

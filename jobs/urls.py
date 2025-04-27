@@ -1,9 +1,9 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
-    UserViewSet, CompanyViewSet, JobViewSet,
+    UserViewSet, JobViewSet,
     ApplicationViewSet, ReviewViewSet, ChatMessageViewSet,
-    FollowViewSet, AdminJobViewSet
+    FollowViewSet, AdminJobViewSet, AdminCompanyViewSet, EmployerCompanyViewSet,CandidateCompanyViewSet
 )
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -12,7 +12,12 @@ from rest_framework_simplejwt.views import (
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
-router.register(r'companies', CompanyViewSet)
+
+# Company
+router.register(r'companies', AdminCompanyViewSet, basename='company-admin')
+router.register(r'employer/companies', EmployerCompanyViewSet, basename='employer-company')
+router.register(r'candidate/companies',CandidateCompanyViewSet , basename='candidate-company')
+#
 router.register(r'jobs', JobViewSet)
 router.register(r'applications', ApplicationViewSet)
 router.register(r'reviews', ReviewViewSet)

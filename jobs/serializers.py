@@ -31,8 +31,7 @@ class CompanyImageSerializer(serializers.ModelSerializer):
 
 class CompanySerializer(serializers.ModelSerializer):
     images = CompanyImageSerializer(many=True, read_only=True)
-    user = UserSerializer(read_only=True)
-
+    user = serializers.CharField(source='user.username', read_only=True)
     class Meta:
         model = Company
         fields = ('id', 'user', 'name', 'tax_code', 'description', 

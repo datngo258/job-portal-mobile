@@ -15,7 +15,7 @@ from .serializers import (
     JobSerializer, ApplicationSerializer, ReviewSerializer,
     ChatMessageSerializer, FollowSerializer
 )
-from .permissions import IsAdminOrReadOnly, IsCompanyOwner, IsApplicationOwner, IsAdmin , IsEmployerAndOwner , IsEmployer
+from .permissions import IsAdminOrReadOnly, IsCompanyOwner, IsApplicationOwner, IsAdmin , IsEmployerAndOwner , IsEmployer, IsAdminUser, IsEmployerUser
 User = get_user_model()
 class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.DestroyAPIView, generics.UpdateAPIView, generics.ListAPIView):
     queryset = User.objects.all()
@@ -62,20 +62,81 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.DestroyAPIV
         if request.user.is_staff:
             return super().destroy(request, *args, **kwargs)
         return Response({"detail": "Bạn không có quyền xóa người dùng này."}, status=403)
-class CompanyViewSet(viewsets.ModelViewSet):
+
+class AdminCompanyViewSet(viewsets.ViewSet , generics.ListAPIView):
     queryset = Company.objects.all()
     serializer_class = CompanySerializer
-    permission_classes = [IsAdminOrReadOnly]
-
-    @action(detail=True, methods=['post'])
-    def upload_images(self, request, pk=None):
+    permission_classes = [IsAdminUser]
+    def destroy(self, request, pk=None):
+        try:
+            company = self.get_object()
+            company.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT,data={"detail": "Thành công!"} )
+        except Company.DoesNotExist:
+            return Response({"detail": "Company not found."}, status=status.HTTP_404_NOT_FOUND)
+    # Action để duyệt công ty (approve)
+    @action(detail=True, methods=['patch'])
+    def approve(self, request, pk=None):
         company = self.get_object()
-        images = request.FILES.getlist('images')
-        for image in images:
-            CompanyImage.objects.create(company=company, image=image)
-        return Response(status=status.HTTP_201_CREATED)
+        company.is_approved = True
+        company.save()
+        return Response({'status': 'Company approved'})
 
-# TÌM KIẾM
+    # Action để từ chối công ty (disapprove)
+    @action(detail=True, methods=['patch'])
+    def disapprove(self, request, pk=None):
+        company = self.get_object()
+        company.is_approved = False
+        company.save()
+        return Response({'status': 'Company disapproved'})
+
+
+class CandidateCompanyViewSet(viewsets.ViewSet, generics.ListAPIView):
+    queryset = Company.objects.all()
+    serializer_class = CompanySerializer
+    permission_classes = [permissions.AllowAny]
+
+class EmployerCompanyViewSet(viewsets.ViewSet, generics.ListAPIView):
+
+    serializer_class = CompanySerializer
+    permission_classes = [permissions.IsAuthenticated, IsEmployerUser]
+
+    def get_queryset(self):
+        return Company.objects.filter(user=self.request.user)
+
+    def create(self, request):
+        # Kiểm tra xem người dùng đã có công ty chưa
+        if Company.objects.filter(user=self.request.user).exists():
+            return Response({"detail": "Người dùng đã có công ty."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Nếu chưa có công ty, tạo mới công ty
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=self.request.user)  # Lưu công ty với user hiện tại
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    @action(detail=True, methods=['patch'])
+    def update_company(self, request, pk=None):
+        company = self.get_queryset().filter(id=pk).first()
+        # Kiểm tra nếu công ty không tồn tại
+        if company is None:
+            return Response({"detail": "Công ty không tồn tại hoặc không có quyền sửa công ty này."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Cập nhật thông tin công ty với dữ liệu mới
+        serializer = self.get_serializer(company, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, pk=None):
+        company = self.get_queryset().filter(id=pk).first()
+        if company is None:
+            return Response({"detail": "Công ty không tồn tại hoặc không có quyền xóa công ty này."},
+                            status=status.HTTP_404_NOT_FOUND)
+        company.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT, data={"Xóa thành công!"})
 class JobViewSet(viewsets.ModelViewSet):
     queryset = Job.objects.all()
     serializer_class = JobSerializer
