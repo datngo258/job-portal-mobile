@@ -39,8 +39,7 @@ class CompanySerializer(serializers.ModelSerializer):
         read_only_fields = ('is_approved', 'created_at')
 
 class JobSerializer(serializers.ModelSerializer):
-    company = CompanySerializer(read_only=True)
-    
+    company = serializers.CharField(source='company.name', read_only=True)
     class Meta:
         model = Job
         fields = ('id', 'company', 'title', 'description', 'requirements',

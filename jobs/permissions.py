@@ -28,9 +28,9 @@ class IsAdmin(permissions.BasePermission):
             return request.user.user_type == 'admin' and request.user.is_authenticated
 # chủ sở hữu công ty là nhà tuyển dụng
 class IsEmployerAndOwner(permissions.BasePermission):
-    def has_permission(self, request, view):
-        # Cho phép nhà tuyển dụng đã đăng nhập tiếp tục thao tác
-        return request.user.is_authenticated and request.user.user_type == 'employer'
+    def has_object_permission(self, request, view, obj):
+        # Giả sử obj.company là công ty đăng job, company.user là người tạo công ty (employer)
+        return obj.company.user == request.user
 
     def has_object_permission(self, request, view, obj):
         # Chỉ cho phép nếu job là của công ty thuộc user
