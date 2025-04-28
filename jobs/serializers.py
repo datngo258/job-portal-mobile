@@ -49,13 +49,15 @@ class JobSerializer(serializers.ModelSerializer):
         read_only_fields = ('created_at', 'updated_at')
 
 class ApplicationSerializer(serializers.ModelSerializer):
-    job = JobSerializer(read_only=True)
-    candidate = UserSerializer(read_only=True)
+    job_id = serializers.PrimaryKeyRelatedField(
+        queryset=Job.objects.all(), source='job', write_only=True
+    )
+    job = serializers.CharField(source='job.title', read_only=True)
+    candidate = serializers.CharField(source='candidate.username', read_only=True)
 
     class Meta:
         model = Application
-        fields = ('id', 'job', 'candidate', 'cv', 'cover_letter',
-                 'status', 'applied_at', 'updated_at')
+        fields = ('id', 'job', 'job_id', 'candidate', 'cv', 'cover_letter', 'status', 'applied_at', 'updated_at')
         read_only_fields = ('applied_at', 'updated_at')
 
 class ReviewSerializer(serializers.ModelSerializer):

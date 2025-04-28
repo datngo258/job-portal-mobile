@@ -223,6 +223,9 @@ class ApplicationViewSet(viewsets.ModelViewSet):
     queryset = Application.objects.all()
     serializer_class = ApplicationSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(candidate=self.request.user)
     def get_queryset(self):
         user = self.request.user
         if user.user_type == 'admin':
@@ -234,6 +237,10 @@ class ApplicationViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def update_status(self, request, pk=None):
         application = self.get_object()
+        user = request.user
+        if user.user_type != 'employer' or application.job.company.user != user:
+            return Response({"detail": "Bạn không có quyền thay đổi trạng thái đơn ứng tuyển này."},
+                            status=status.HTTP_403_FORBIDDEN)
         new_status = request.data.get('status')
         if new_status in dict(Application.STATUS_CHOICES):
             application.status = new_status
