@@ -113,7 +113,6 @@ class EmployerCompanyViewSet(viewsets.ViewSet, generics.ListAPIView):
                             status=status.HTTP_400_BAD_REQUEST)
         # Nếu chưa có công ty, tạo mới công ty
         serializer = self.get_serializer(data=request.data)
-        serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             company = serializer.save(user=request.user)  # Lưu công ty
             # Sau khi lưu công ty, lưu ảnh
@@ -247,11 +246,64 @@ class ApplicationViewSet(viewsets.ModelViewSet):
             application.save()
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
-
 class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
+    def get_permissions(self):
+        if self.request.user.is_staff:
+            return [permissions.AllowAny()]
+        return [permissions.IsAuthenticated()]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff:
+            return Review.objects.all()
+        return Review.objects.filter(application__candidate=user) | Review.objects.filter(application__job__company__user=user)
+    def create(self, request, *args, **kwargs):
+        user = request.user
+        application_id = request.data.get('application')
+
+        try:
+            application = Application.objects.get(id=application_id)
+        except Application.DoesNotExist:
+            return Response({"detail": "Không có đơn tuyển dụng như đã gửi. "}, status=status.HTTP_404_NOT_FOUND)
+
+        if application.status != 'completed':
+            return Response({"detail": "Bạn chỉ có thể xem xét các đơn đã hoàn thành."},
+                            status=status.HTTP_400_BAD_REQUEST)
+        # Check quyền review:
+        if user == application.candidate:
+            is_employer_review = False  # ứng viên review công ty
+        elif user == application.job.company.user:
+            is_employer_review = True  # employer review ứng viên
+        else:
+            return Response({"detail": "Bạn không có quyền đánh giá đơn này."},
+                            status=status.HTTP_403_FORBIDDEN)
+        # Tạo review
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(is_employer_review=is_employer_review, application=application)
+
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def perform_update(self, serializer):
+        review = self.get_object()
+        user = self.request.user
+        if not (user.is_staff or
+                user == review.application.candidate or
+                user == review.application.job.company.user):
+            return Response({"detail": "Bạn không có quyền sửa đánh giá này."}, status=status.HTTP_403_FORBIDDEN)
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        user = self.request.user
+        if not (user.is_staff or
+                user == instance.application.candidate or
+                user == instance.application.job.company.user):
+            return Response({"detail": "Bạn không có quyền xóa đánh giá này."}, status=status.HTTP_403_FORBIDDEN)
+        instance.delete()
 
 class ChatMessageViewSet(viewsets.ModelViewSet):
     queryset = ChatMessage.objects.all()
@@ -264,10 +316,33 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
             Q(receiver=self.request.user)
         ).order_by('created_at')
 
-class FollowViewSet(viewsets.ModelViewSet):
+class FollowViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = Follow.objects.all()
     serializer_class = FollowSerializer
     permission_classes = [permissions.IsAuthenticated]
-
     def get_queryset(self):
-        return Follow.objects.filter(candidate=self.request.user)
+        user = self.request.user  # phải lấy từ request.user, không phải self.user
+        if user.user_type == "admin":
+            return Follow.objects.all()
+        elif user.user_type == "employer":
+            # Nhà tuyển dụng: xem ai đang follow các công ty mà mình quản lý
+            return Follow.objects.filter(company__user=user)
+        else:
+            # Ứng viên: chỉ xem các follow mà mình đã follow
+            return Follow.objects.filter(candidate=user)
+    @action(methods=['post'], detail=True, url_path='toggle-follow')
+    def toggle_follow(self, request, pk=None):
+        user = request.user
+        # Chỉ ứng viên mới có quyền follow công ty
+        if user.user_type != 'candidate':
+            return Response({"detail": "Chỉ ứng viên mới có thể theo dõi công ty."}, status=status.HTTP_403_FORBIDDEN)
+        try:
+            company = Company.objects.get(pk=pk)
+        except Company.DoesNotExist:
+            return Response({"detail": "Không tìm thấy công ty."}, status=status.HTTP_404_NOT_FOUND)
+        follow, created = Follow.objects.get_or_create(candidate=user, company=company)
+        if not created:
+            # Đã follow rồi thì unfollow
+            follow.delete()
+            return Response({"detail": "Bỏ theo dõi thành công."}, status=status.HTTP_200_OK) 
+        return Response({"detail": "Theo dõi thành công."}, status=status.HTTP_201_CREATED)

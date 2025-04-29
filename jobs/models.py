@@ -84,11 +84,10 @@ class Review(models.Model):
         (4, '4 Stars'),
         (5, '5 Stars'),
     )
-    
     application = models.OneToOneField(Application, on_delete=models.CASCADE, related_name='review')
     rating = models.IntegerField(choices=RATING_CHOICES)
     comment = models.TextField()
-    is_employer_review = models.BooleanField(default=False)  # True if review is from employer to candidate
+    is_employer_review = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
 
 class ChatMessage(models.Model):
@@ -104,6 +103,7 @@ class Follow(models.Model):
     candidate = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='following')
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='followers')
     created_at = models.DateTimeField(default=timezone.now)
-
     class Meta:
         unique_together = ('candidate', 'company')
+    def __str__(self):
+        return f"{self.candidate.username} follows {self.company.name}"

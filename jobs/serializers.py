@@ -78,12 +78,13 @@ class ChatMessageSerializer(serializers.ModelSerializer):
         fields = ('id', 'sender', 'receiver', 'message',
                  'is_read', 'created_at')
         read_only_fields = ('created_at',)
-
+class CompanySimpleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Company
+        fields = ['id', 'name']
 class FollowSerializer(serializers.ModelSerializer):
-    candidate = UserSerializer(read_only=True)
-    company = CompanySerializer(read_only=True)
-
+    company = CompanySimpleSerializer(read_only=True)
     class Meta:
         model = Follow
-        fields = ('id', 'candidate', 'company', 'created_at')
-        read_only_fields = ('created_at',) 
+        fields = ('id', 'company', 'created_at')
+        read_only_fields = ('created_at',)
