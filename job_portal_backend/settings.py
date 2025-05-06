@@ -134,6 +134,7 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
+ALLOWED_HOSTS = ['192.168.1.10', 'localhost']
 
 
 # Static files (CSS, JavaScript, Images)
