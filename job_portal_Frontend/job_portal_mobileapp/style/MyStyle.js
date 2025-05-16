@@ -5,5 +5,8 @@ export default StyleSheet.create({
         backgroundColor: '#fff',
         alignItems: 'center',
         justifyContent: 'center',
+    }, 
+    name : { 
+        color : "red"
     }
 }) ; 

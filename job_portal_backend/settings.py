@@ -29,7 +29,9 @@ SECRET_KEY = 'django-insecure-w-e10l@656_)ay7!3ec5$=_9!)(au*dz(llthqs3^ximi)tj!y
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = ['192.168.1.31', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '172.165.50.4']
+
 cloudinary.config(
     cloud_name = "dr2mxhzts",
     api_key = "731497689846592",
@@ -134,7 +136,7 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-ALLOWED_HOSTS = ['192.168.1.10', 'localhost']
+
 
 
 # Static files (CSS, JavaScript, Images)

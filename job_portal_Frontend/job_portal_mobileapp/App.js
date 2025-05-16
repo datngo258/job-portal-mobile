@@ -1,28 +1,44 @@
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import Home from "./components/Home/home";
-import Login from "./components/Login/login";
+  import React, { useReducer } from "react";
+  import { NavigationContainer } from "@react-navigation/native";
+  import { createDrawerNavigator } from "@react-navigation/drawer";
+  import Home from "./components/Home/home";
+  import Login from "./components/Login/login";
+  import MyConText from "./configs/MyConText";
+  import MyUserReducers from "./reducers/MyUserReducers";
+  import logout from "./components/Login/logout";
 
-const Stack = createNativeStackNavigator();
+  const Drawer = createDrawerNavigator();
+  export default function App() {
+    const [user, dispatch] = useReducer(MyUserReducers, null);
 
-export default function App() {
-  return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName='Home'>
-        <Stack.Screen name="Home" component={Home} />
-        <Stack.Screen name="Login" component={Login} />
-      </Stack.Navigator>
-    </NavigationContainer>
-  );
-}
+    return (
+      <MyConText.Provider value={[user, dispatch]}>
+        <NavigationContainer>
+          <Drawer.Navigator
+            initialRouteName="Đăng Nhập"
+            screenOptions={{ headerRight: logout }}
+          >
+            <Drawer.Screen name="Home" component={Home} />
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
+            {user === null ? (
+              <>
+                <Drawer.Screen name="Đăng Nhập" component={Login} />
+              </>
+            ) : (
+              <>
+                <Drawer.Screen
+                  name={`Xin chào, ${user.username}`}
+                  component={Home}
+                />
+              </>
+            )}
+            <Drawer.Screen
+              name="Đăng Xuất"
+              component={logout}
+              options={{ drawerItemStyle: { display: "none" } }}
+            />
+          </Drawer.Navigator>
+        </NavigationContainer>
+      </MyConText.Provider>
+    );
+  }
