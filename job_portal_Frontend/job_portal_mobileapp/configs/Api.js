@@ -4,6 +4,7 @@ export const BASE_URL = "http://172.165.50.4:8000";
 export const endpoints = {
   login: "/o/token/",
   current_user: "/users/current_user/",
+  register: "/users/",
 };
 export const authAPI = (accesstoken) =>
   axios.create({

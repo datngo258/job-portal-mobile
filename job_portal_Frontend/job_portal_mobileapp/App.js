@@ -6,6 +6,7 @@
   import MyConText from "./configs/MyConText";
   import MyUserReducers from "./reducers/MyUserReducers";
   import logout from "./components/Login/logout";
+import Register from "./components/Login/Register";
 
   const Drawer = createDrawerNavigator();
   export default function App() {
@@ -19,6 +20,7 @@
             screenOptions={{ headerRight: logout }}
           >
             <Drawer.Screen name="Home" component={Home} />
+            <Drawer.Screen name="Đăng Ký" component={Register} />
 
             {user === null ? (
               <>
