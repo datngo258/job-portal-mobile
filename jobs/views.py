@@ -18,25 +18,25 @@ from .serializers import (
 from .permissions import IsAdminOrReadOnly, IsCompanyOwner, IsApplicationOwner, IsAdmin , IsEmployerAndOwner , IsEmployer, IsAdminUser, IsEmployerUser
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 User = get_user_model()
-class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.DestroyAPIView, generics.UpdateAPIView, generics.ListAPIView):
+class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    parser_classes = [parsers.MultiPartParser, FormParser, JSONParser]  # Cho phép upload file
+    parser_classes = [parsers.MultiPartParser, FormParser, JSONParser]
 
     def get_permissions(self):
         if self.action == 'current_user':
-            return [permissions.IsAuthenticated()]  # Phải đăng nhập để xem thông tin của chính mình
-        elif self.action == 'destroy' or self.action == 'list':
-            return [permissions.IsAdminUser()]  # Chỉ admin mới có quyền xóa hoặc xem danh sách user
+            return [permissions.IsAuthenticated()]
+        elif self.action in ['destroy', 'list']:
+            return [permissions.IsAdminUser()]
         elif self.action in ['update', 'partial_update']:
-            return [permissions.IsAuthenticated()]  # Phải đăng nhập để cập nhật thông tin user
-        return [permissions.AllowAny()]  # Cho phép bất kỳ ai thực hiện các hành động khác
+            return [permissions.IsAuthenticated()]
+        elif self.action == 'create':
+            return [permissions.AllowAny()]  # ✅ Cho phép bất kỳ ai đăng ký
+        return [permissions.AllowAny()]
 
     @action(detail=False, methods=['get'], url_name='current_user')
     def current_user(self, request):
-        """ Lấy thông tin của người dùng hiện tại (yêu cầu phải đăng nhập) """
         return Response(UserSerializer(request.user).data)
-
     def update(self, request, *args, **kwargs):
         user = self.get_object()
         if request.user.is_staff or request.user == user:

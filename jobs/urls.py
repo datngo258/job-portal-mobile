@@ -11,7 +11,6 @@ from rest_framework_simplejwt.views import (
 )
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
-
 # Company
 router.register(r'companies', AdminCompanyViewSet, basename='company-admin')
 router.register(r'employer/companies', EmployerCompanyViewSet, basename='employer-company')

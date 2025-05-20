@@ -30,8 +30,8 @@ SECRET_KEY = 'django-insecure-w-e10l@656_)ay7!3ec5$=_9!)(au*dz(llthqs3^ximi)tj!y
 DEBUG = True
 
 # ALLOWED_HOSTS = ['192.168.1.31', 'localhost', '127.0.0.1']
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '172.165.50.4']
-
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.0.2.2']
+# ALLOWED_HOSTS = []
 cloudinary.config(
     cloud_name = "dr2mxhzts",
     api_key = "731497689846592",
@@ -55,7 +55,8 @@ INSTALLED_APPS = [
     'django_ckeditor_5',
     'ckeditor_uploader',
     'cloudinary',
-'oauth2_provider',
+    'corsheaders',
+    'oauth2_provider',
 ]
 CKEDITOR_UPLOAD_PATH = "images/avatar/"
 MEDIA_URL = '/media/'
@@ -68,6 +69,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'job_portal_backend.urls'
@@ -104,7 +106,8 @@ DATABASES = {
         'PORT': '3306',  # Mặc định là localhost
     }
 }
-
+clinet_id2 = "Ks2CDdYHXa48xDxN3cwaBpTuj8LKeMCRlflDmwMx"
+client_secrect = "CplCprx5GKtE3JHhxRsruo6taBBX0k4AA9RFFfhAfRv74RFvXPDNcJpy3C2xbcJyOEJ3Z7RlCW9Bo7rrFMz9kJUWWRxyJ4sEK41ZUfEDqUvS6PZxx9OwQdIuZ4R9RDj4"
 
 
 # Password validation

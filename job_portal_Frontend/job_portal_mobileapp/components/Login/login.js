@@ -4,6 +4,7 @@ import styles from "./style";
 import MyConText from "../../configs/MyConText";
 import Apis, { authAPI, BASE_URL, endpoints } from "../../configs/Api";
 import qs from "qs";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Login = ({ navigation }) => {
   const [username, setUsername] = useState("");
@@ -22,6 +23,9 @@ const Login = ({ navigation }) => {
       });
       const res = await Apis.post(`${BASE_URL}${endpoints.login}`, data1);
       console.log(res.data);
+      console.log(`${BASE_URL}${endpoints.login}`);
+      // lưu token vào trong nhớ tạm
+      await AsyncStorage.setItem("access_token", res.data.access_token);
       let user = await authAPI(res.data.access_token).get(
         endpoints["current_user"]
       );
@@ -31,6 +35,7 @@ const Login = ({ navigation }) => {
           username: user.data.username,
         },
       });
+      console.log(`${BASE_URL}${endpoints.login}`);
       navigation.navigate("Home");
     } catch (err) {
       console.error(err);
