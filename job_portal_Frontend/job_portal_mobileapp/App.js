@@ -8,7 +8,8 @@ import MyUserReducers from "./reducers/MyUserReducers";
 import logout from "./components/Login/logout";
 import Register from "./components/Login/Register";
 import JobDetail from "./components/Home/DetailJob";
-
+import CompanyList from "./components/Home/Company";
+import CompanyDetail from "./components/Home/CompanyDetail";
 const Drawer = createDrawerNavigator();
 export default function App() {
   const [user, dispatch] = useReducer(MyUserReducers, null);
@@ -22,10 +23,20 @@ export default function App() {
         >
           <Drawer.Screen name="Home" component={Home} />
           <Drawer.Screen name="Đăng Ký" component={Register} />
+          <Drawer.Screen name="Company" component={CompanyList} />
+          <Drawer.Screen
+            name="CompanyDetail"
+            component={CompanyDetail}
+            options={{
+              drawerItemStyle: { display: "none" },
+            }}
+          />
           <Drawer.Screen
             name="JobDetail"
             component={JobDetail}
-            options={{ drawerItemStyle: { display: "none" } }}
+            options={{
+              drawerItemStyle: { display: "none" },
+            }}
           />
 
           {user === null ? (

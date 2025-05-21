@@ -157,6 +157,7 @@ class JobViewSet(viewsets.ModelViewSet):
         salary_min = self.request.query_params.get('salary_min', None)
         salary_max = self.request.query_params.get('salary_max', None)
         working_hours = self.request.query_params.get('working_hours', None)
+        company_name = self.request.query_params.get('company_name', None)
         if job_type:
             queryset = queryset.filter(job_type=job_type)
         if location:
@@ -167,6 +168,8 @@ class JobViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(salary_max__lte=salary_max)
         if working_hours:
             queryset = queryset.filter(working_hours=working_hours)
+        if company_name:
+            queryset = queryset.filter(company__name__icontains=company_name)
         return queryset
 
     def get_permissions(self):
@@ -175,8 +178,6 @@ class JobViewSet(viewsets.ModelViewSet):
         elif self.action in ['update', 'partial_update', 'destroy']:
             return [permissions.IsAuthenticated(), IsEmployerAndOwner()]
         return [permissions.IsAuthenticated()]
-        # Thêm một action 'my_jobs' để xem các job của chính người dùng
-
     @action(detail=False, methods=['get'])
     def my_jobs(self, request):
         queryset = Job.objects.filter(company__user=request.user)  # company__user là user hiện tại
