@@ -6,20 +6,23 @@ import {
   Image,
   ActivityIndicator,
   Dimensions,
+  TouchableOpacity,
 } from "react-native";
 import axios from "axios";
 import { MaterialIcons } from "@expo/vector-icons";
 import styles from "./style";
 import { useNavigation } from "@react-navigation/native";
-import { TouchableOpacity } from "react-native";
 
 const { width } = Dimensions.get("window");
-
 const MAX_DESCRIPTION_LENGTH = 120;
+
 const CompanyList = () => {
   const navigation = useNavigation();
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // State quản lý danh sách công ty đã follow (chỉ trong bộ nhớ)
+  const [followedCompanies, setFollowedCompanies] = useState([]);
 
   useEffect(() => {
     const fetchCompanies = async () => {
@@ -37,22 +40,44 @@ const CompanyList = () => {
     fetchCompanies();
   }, []);
 
-  const renderItem = ({ item }) => {
-    const imagesToShow = item.images ? item.images.slice(0, 3) : [];
+  // Toggle trạng thái follow/unfollow
+  const toggleFollow = (companyId) => {
+    setFollowedCompanies((prev) => {
+      if (prev.includes(companyId)) {
+        return prev.filter((id) => id !== companyId); // unfollow
+      } else {
+        return [...prev, companyId]; // follow
+      }
+    });
+  };
 
-    const shortDesc =
-      item.description.length > MAX_DESCRIPTION_LENGTH
-        ? item.description.slice(0, MAX_DESCRIPTION_LENGTH) + "..."
-        : item.description;
+  const renderItem = ({ item }) => {
+    const isFollowed = followedCompanies.includes(item.id);
+
     return (
       <TouchableOpacity
         onPress={() => navigation.navigate("CompanyDetail", { company: item })}
       >
         <View style={styles.card}>
+          {/* Nút follow góc trên phải */}
+          <TouchableOpacity
+            onPress={(e) => {
+              e.stopPropagation();
+              toggleFollow(item.id);
+            }}
+            style={styles.follow}
+          >
+            <MaterialIcons
+              name={isFollowed ? "favorite" : "favorite-border"}
+              size={28}
+              color={isFollowed ? "red" : "gray"}
+            />
+          </TouchableOpacity>
+
           <Text style={styles.companyName}>{item.name}</Text>
           <Text style={styles.description}>
-            {item.description.length > 120
-              ? item.description.slice(0, 120) + "..."
+            {item.description.length > MAX_DESCRIPTION_LENGTH
+              ? item.description.slice(0, MAX_DESCRIPTION_LENGTH) + "..."
               : item.description}
           </Text>
           <View style={styles.addressContainer}>
@@ -62,7 +87,7 @@ const CompanyList = () => {
           <FlatList
             horizontal
             showsHorizontalScrollIndicator={false}
-            data={item.images.slice(0, 3)}
+            data={item.images ? item.images.slice(0, 3) : []}
             keyExtractor={(img) =>
               img.id ? img.id.toString() : Math.random().toString()
             }

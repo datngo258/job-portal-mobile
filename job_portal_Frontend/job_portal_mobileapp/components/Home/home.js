@@ -9,15 +9,16 @@ import {
   TextInput,
   ScrollView,
 } from "react-native";
-import Api, { endpoints } from "../../configs/Api";
+import Api, { authAPI, endpoints } from "../../configs/Api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import MyConText from "../../configs/MyConText";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import JobDetail from "./DetailJob";
-
 dayjs.extend(relativeTime);
-
+import "dayjs/locale/vi";
+dayjs.locale("vi");
+dayjs.extend(relativeTime);
 export default function Home({ navigation }) {
   const [jobs, setJobs] = useState([]);
   const [filteredJobs, setFilteredJobs] = useState([]);
@@ -93,6 +94,7 @@ export default function Home({ navigation }) {
   }, [jobType, workingHours, salaryMin, salaryMax, location]);
 
   // render 1 item job
+
   const renderItem = ({ item }) => (
     <TouchableOpacity
       activeOpacity={0.6}
@@ -107,8 +109,10 @@ export default function Home({ navigation }) {
         </Text>
         <Text>Giờ làm việc: {item.working_hours}</Text>
         <Text style={styles.createdAt}>
-          Đăng cách đây: {dayjs(item.created_at).fromNow()}
+          Đăng cách đây {dayjs().diff(dayjs(item.created_at), "day")} ngày
         </Text>
+
+        {/* Nếu là ứng viên thì show nút Ứng tuyển */}
       </View>
     </TouchableOpacity>
   );
@@ -226,5 +230,17 @@ const styles = StyleSheet.create({
     backgroundColor: "#007bff",
     borderRadius: 5,
     alignItems: "center",
+  },
+  applyBtn: {
+    marginTop: 12,
+    backgroundColor: "#28a745",
+    paddingVertical: 8,
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  applyBtnText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 16,
   },
 });

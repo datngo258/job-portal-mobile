@@ -158,6 +158,7 @@ class JobViewSet(viewsets.ModelViewSet):
         salary_max = self.request.query_params.get('salary_max', None)
         working_hours = self.request.query_params.get('working_hours', None)
         company_name = self.request.query_params.get('company_name', None)
+        company_id = self.request.query_params.get("company_id")
         if job_type:
             queryset = queryset.filter(job_type=job_type)
         if location:
@@ -170,6 +171,8 @@ class JobViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(working_hours=working_hours)
         if company_name:
             queryset = queryset.filter(company__name__icontains=company_name)
+        if company_id:
+            queryset = queryset.filter(company__id=company_id)
         return queryset
 
     def get_permissions(self):
@@ -224,16 +227,26 @@ class ApplicationViewSet(viewsets.ModelViewSet):
     serializer_class = ApplicationSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def perform_create(self, serializer):
-        serializer.save(candidate=self.request.user)
     def get_queryset(self):
         user = self.request.user
-        if user.user_type == 'admin':
-            return Application.objects.all()
-        elif user.user_type == 'employer':
-            return Application.objects.filter(job__company__user=user)
-        return Application.objects.filter(candidate=user)
+        queryset = Application.objects.all()
 
+        # Lọc theo quyền user
+        if user.user_type == 'admin':
+            queryset = Application.objects.all()
+        elif user.user_type == 'employer':
+            queryset = Application.objects.filter(job__company__user=user)
+        else:
+            queryset = Application.objects.filter(candidate=user)
+
+        # Lọc theo job_id nếu được truyền từ query param
+        job_id = self.request.query_params.get('job_id')
+        if job_id:
+            queryset = queryset.filter(job__id=job_id)
+
+        return queryset
+    def perform_create(self, serializer):
+        serializer.save(candidate=self.request.user)
     @action(detail=True, methods=['post'])
     def update_status(self, request, pk=None):
         application = self.get_object()
@@ -247,6 +260,7 @@ class ApplicationViewSet(viewsets.ModelViewSet):
             application.save()
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
+
 class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer

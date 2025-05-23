@@ -73,6 +73,25 @@ export default StyleSheet.create({
     shadowRadius: 6,
     elevation: 3,
   },
+  applyBtn: {
+    marginTop: 20,
+    padding: 12,
+    backgroundColor: "#28a745",
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  applyBtnText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  follow: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    zIndex: 10,
+    padding: 5,
+  },
   companyName: {
     fontSize: 20,
     fontWeight: "700",

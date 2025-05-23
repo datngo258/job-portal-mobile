@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Api, { authAPI, BASE_URL, endpoints } from "../../configs/Api";
+import jobCardStyle from "../Home/style/jobCardStyle";
 import {
   View,
   Text,
@@ -26,12 +27,8 @@ const CompanyDetail = ({ route, navigation }) => {
     const fetchJobs = async () => {
       try {
         const token = await AsyncStorage.getItem("access_token");
-        console.log("Token:", token);
-        //  const res = await Api.get(endpoints.jobs, {
-        //         headers: { Authorization: `Bearer ${token}` },
-        //       });
         const response = await Api.get(`${BASE_URL}${endpoints.jobs}`, {
-          params: { company_name: company.name },
+          params: { company_id: company.id },
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -48,17 +45,36 @@ const CompanyDetail = ({ route, navigation }) => {
 
   const renderJobItem = ({ item }) => (
     <TouchableOpacity
-      style={styles.jobCard}
+      style={jobCardStyle.container}
       onPress={() => navigation.navigate("JobDetail", { job: item })}
     >
-      <Text style={styles.jobTitle}>{item.title}</Text>
-      <Text numberOfLines={2} style={styles.jobDescription}>
+      <Text style={jobCardStyle.title}>{item.title}</Text>
+      <Text numberOfLines={2} style={jobCardStyle.description}>
         {item.description}
       </Text>
-      <View style={{ flexDirection: "row", marginTop: 5 }}>
-        <MaterialIcons name="location-on" size={16} color="#666" />
-        <Text style={styles.jobLocation}>{item.location}</Text>
+
+      <View style={jobCardStyle.infoRow}>
+        <MaterialIcons name="location-on" size={18} color="#666" />
+        <Text style={jobCardStyle.infoText}>{item.location}</Text>
       </View>
+
+      {item.salary_min && (
+        <View style={jobCardStyle.infoRow}>
+          <MaterialIcons name="attach-money" size={18} color="#666" />
+          <Text style={jobCardStyle.infoText}>
+            {item.salary_min} - {item.salary_max}
+          </Text>
+        </View>
+      )}
+
+      {item.working_hours && (
+        <View style={jobCardStyle.infoRow}>
+          <MaterialIcons name="schedule" size={18} color="#666" />
+          <Text style={jobCardStyle.infoText}>
+            {item.working_hours} giờ/tuần
+          </Text>
+        </View>
+      )}
     </TouchableOpacity>
   );
 

@@ -7,7 +7,7 @@ from .models import (
 
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
-    list_display = ('username', 'email', 'user_type', 'is_verified', 'created_at')
+    list_display = ('username', 'email', 'user_type', 'is_verified', 'created_at', 'avatar')
     list_filter = ('user_type', 'is_verified')
     search_fields = ('username', 'email')
     ordering = ('-created_at',)
@@ -26,14 +26,14 @@ class CompanyAdmin(admin.ModelAdmin):
 
 @admin.register(Job)
 class JobAdmin(admin.ModelAdmin):
-    list_display = ('title', 'company', 'job_type', 'location', 'is_active', 'created_at')
+    list_display = ('title', 'company', 'job_type', 'location', 'is_active', 'created_at','id')
     list_filter = ('job_type', 'is_active')
     search_fields = ('title', 'company__name', 'location')
     ordering = ('-created_at',)
 
 @admin.register(Application)
 class ApplicationAdmin(admin.ModelAdmin):
-    list_display = ('job', 'candidate', 'status', 'applied_at')
+    list_display = ('job', 'candidate', 'status', 'applied_at', 'id')
     list_filter = ('status',)
     search_fields = ('job__title', 'candidate__username')
     ordering = ('-applied_at',)

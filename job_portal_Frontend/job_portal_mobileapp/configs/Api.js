@@ -8,6 +8,7 @@ export const endpoints = {
   current_user: "/users/current_user/",
   register: "/users/",
   jobs: "/jobs/",
+  applications :  "/applications/",
 };
 export const authAPI = (accesstoken) =>
   axios.create({

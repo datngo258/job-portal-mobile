@@ -10,54 +10,70 @@ import Register from "./components/Login/Register";
 import JobDetail from "./components/Home/DetailJob";
 import CompanyList from "./components/Home/Company";
 import CompanyDetail from "./components/Home/CompanyDetail";
+import Profile from "./components/User/User";
+import ApplyJob from "./components/Job/CandidateApp";
+import ApplicationsProvider from "./assets/Provider/ApplicationsProvider";
+import EditApplication from "./components/User/EditApplication";
 const Drawer = createDrawerNavigator();
 export default function App() {
   const [user, dispatch] = useReducer(MyUserReducers, null);
 
   return (
-    <MyConText.Provider value={[user, dispatch]}>
-      <NavigationContainer>
-        <Drawer.Navigator
-          initialRouteName="Đăng Nhập"
-          screenOptions={{ headerRight: logout }}
-        >
-          <Drawer.Screen name="Home" component={Home} />
-          <Drawer.Screen name="Đăng Ký" component={Register} />
-          <Drawer.Screen name="Company" component={CompanyList} />
-          <Drawer.Screen
-            name="CompanyDetail"
-            component={CompanyDetail}
-            options={{
-              drawerItemStyle: { display: "none" },
-            }}
-          />
-          <Drawer.Screen
-            name="JobDetail"
-            component={JobDetail}
-            options={{
-              drawerItemStyle: { display: "none" },
-            }}
-          />
+    <ApplicationsProvider>
+      {" "}
+      <MyConText.Provider value={[user, dispatch]}>
+        <NavigationContainer>
+          <Drawer.Navigator
+            initialRouteName="Đăng Nhập"
+            screenOptions={{ headerRight: logout }}
+          >
+            {user === null ? (
+              <>
+                <Drawer.Screen name="Đăng Nhập" component={Login} />
+              </>
+            ) : (
+              <>
+                <Drawer.Screen name="Profile" component={Profile} />
+              </>
+            )}
+            <Drawer.Screen
+              name="ApplyJob"
+              component={ApplyJob}
+              options={{
+                title: "Ứng tuyển",
+                drawerItemStyle: { display: "none" },
+              }}
+            />
 
-          {user === null ? (
-            <>
-              <Drawer.Screen name="Đăng Nhập" component={Login} />
-            </>
-          ) : (
-            <>
-              <Drawer.Screen
-                name={`Xin chào, ${user.username}`}
-                component={Home}
-              />
-            </>
-          )}
-          <Drawer.Screen
-            name="Đăng Xuất"
-            component={logout}
-            options={{ drawerItemStyle: { display: "none" } }}
-          />
-        </Drawer.Navigator>
-      </NavigationContainer>
-    </MyConText.Provider>
+            <Drawer.Screen name="Home" component={Home} />
+            <Drawer.Screen name="Đăng Ký" component={Register} />
+            <Drawer.Screen name="Company" component={CompanyList} />
+            <Drawer.Screen
+              name="CompanyDetail"
+              component={CompanyDetail}
+              options={{ drawerItemStyle: { display: "none" } }}
+            />
+            <Drawer.Screen
+              name="JobDetail"
+              component={JobDetail}
+              options={{ drawerItemStyle: { display: "none" } }}
+            />
+            <Drawer.Screen
+              name="Đăng Xuất"
+              component={logout}
+              options={{ drawerItemStyle: { display: "none" } }}
+            />
+            <Drawer.Screen
+              name="EditApplication"
+              component={EditApplication}
+              options={{
+                title: "Sửa đơn ứng tuyển",
+                drawerItemStyle: { display: "none" },
+              }}
+            />
+          </Drawer.Navigator>
+        </NavigationContainer>
+      </MyConText.Provider>
+    </ApplicationsProvider>
   );
 }
