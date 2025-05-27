@@ -84,7 +84,7 @@ class Review(models.Model):
         (4, '4 Stars'),
         (5, '5 Stars'),
     )
-    application = models.OneToOneField(Application, on_delete=models.CASCADE, related_name='review')
+    application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='reviews')  # Sửa từ OneToOneField thành ForeignKey
     rating = models.IntegerField(choices=RATING_CHOICES)
     comment = models.TextField()
     is_employer_review = models.BooleanField(default=False)

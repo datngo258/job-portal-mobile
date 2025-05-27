@@ -17,6 +17,11 @@ from .serializers import (
 )
 from .permissions import IsAdminOrReadOnly, IsCompanyOwner, IsApplicationOwner, IsAdmin , IsEmployerAndOwner , IsEmployer, IsAdminUser, IsEmployerUser
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from django.db.models.functions import TruncMonth
+from django.db.models import Count
+from datetime import datetime, timedelta
 User = get_user_model()
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -100,6 +105,8 @@ class EmployerCompanyViewSet(viewsets.ViewSet, generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated, IsEmployerUser]
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Company.objects.none()
         return Company.objects.filter(user=self.request.user)
 
     def create(self, request):
@@ -228,6 +235,8 @@ class ApplicationViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Application.objects.none()
         user = self.request.user
         queryset = Application.objects.all()
 
@@ -361,3 +370,75 @@ class FollowViewSet(viewsets.ViewSet, generics.ListAPIView):
             follow.delete()
             return Response({"detail": "Bỏ theo dõi thành công."}, status=status.HTTP_200_OK) 
         return Response({"detail": "Theo dõi thành công."}, status=status.HTTP_201_CREATED)
+
+
+
+#Api dùnddeerthoosng kê sl nhà tuyển dụng , công vịệc ,ứng viên trong 4 tháng gần nhất
+class StatisticsView(APIView):
+    def get(self, request):
+        today = datetime.today()
+        start_date = today - timedelta(days=120)  # 4 tháng trước
+
+        # Thống kê jobs
+        jobs_per_month = (
+            Job.objects.filter(created_at__gte=start_date)
+            .annotate(month=TruncMonth('created_at'))
+            .values('month')
+            .annotate(count=Count('id'))
+            .order_by('month')
+        )
+
+        # Thống kê candidates
+        candidates_per_month = (
+            User.objects.filter(date_joined__gte=start_date, user_type='candidate')
+            .annotate(month=TruncMonth('date_joined'))
+            .values('month')
+            .annotate(count=Count('id'))
+            .order_by('month')
+        )
+
+        # Thống kê employers
+        employers_per_month = (
+            User.objects.filter(date_joined__gte=start_date, user_type='employer')
+            .annotate(month=TruncMonth('date_joined'))
+            .values('month')
+            .annotate(count=Count('id'))
+            .order_by('month')
+        )
+
+        # Chuẩn bị danh sách tháng (lấy theo jobs, hoặc bạn có thể chuẩn hóa lấy tháng chung)
+        months = []
+        jobs = []
+        candidates = []
+        employers = []
+
+        # Lấy danh sách tháng trong 4 tháng gần nhất (để có đủ tháng kể cả không có dữ liệu)
+        # Dùng list tháng theo thứ tự ngày từ start_date đến today
+        month_iter = start_date
+        while month_iter <= today:
+            months.append(month_iter.strftime('%b'))
+            # Tìm số lượng tương ứng cho mỗi tháng (jobs, candidates, employers)
+            job_count = next(
+                (item['count'] for item in jobs_per_month if item['month'].strftime('%b') == month_iter.strftime('%b')),
+                0)
+            candidate_count = next((item['count'] for item in candidates_per_month if
+                                    item['month'].strftime('%b') == month_iter.strftime('%b')), 0)
+            employer_count = next((item['count'] for item in employers_per_month if
+                                   item['month'].strftime('%b') == month_iter.strftime('%b')), 0)
+
+            jobs.append(job_count)
+            candidates.append(candidate_count)
+            employers.append(employer_count)
+
+            # Chuyển sang tháng tiếp theo
+            if month_iter.month == 12:
+                month_iter = month_iter.replace(year=month_iter.year + 1, month=1)
+            else:
+                month_iter = month_iter.replace(month=month_iter.month + 1)
+
+        return Response({
+            "months": months,
+            "jobs": jobs,
+            "candidates": candidates,
+            "employers": employers
+        })

@@ -19,6 +19,7 @@ const EditApplication = ({ route, navigation }) => {
   const [coverLetter, setCoverLetter] = useState(
     application.cover_letter || ""
   );
+  console.log("Dữ liệu nhận được :", route.params);
   const [cvFile, setCvFile] = useState(null); // Lưu file CV
   const [loading, setLoading] = useState(false);
   const [applications, dispatchApplications] = useContext(ApplicationsContext);
@@ -40,7 +41,6 @@ const EditApplication = ({ route, navigation }) => {
         });
         console.log("Đã chọn file:", file);
       } else if (result.type === "success") {
-        // fallback nếu không dùng assets
         setCvFile(result);
         console.log("Đã chọn file (fallback):", result);
       } else {
@@ -85,10 +85,6 @@ const EditApplication = ({ route, navigation }) => {
           type: getMimeType(cvFile.name || "cv.pdf"),
         });
       }
-      for (let pair of formData._parts) {
-        console.log(`${pair[0]}:`, pair[1]);
-      }
-
       const response = await authAPI(token).patch(
         `${endpoints["applications"]}${application.id}/`,
         formData,
@@ -124,12 +120,14 @@ const EditApplication = ({ route, navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Công việc: {application.job}</Text>
       <Text style={styles.title}>
-        Công ty: {application.job_company || "Không rõ"}
+        Công việc: {application.job?.title || "Không rõ"}
+      </Text>
+      <Text style={styles.title}>
+        Trạng Thái: {application.status || "Không rõ"}
       </Text>
 
-      <Text style={styles.label}>Thư xin việc</Text>
+      <Text style={styles.label}>Lý do chọn công việc</Text>
       <TextInput
         style={styles.textInput}
         multiline

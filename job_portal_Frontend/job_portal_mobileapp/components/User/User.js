@@ -78,9 +78,23 @@ const Profile = ({ navigation }) => {
     }
     console.log("Xóa đơn ứng tuyển với ID:", applicationId);
   };
-  const handleComment = (application) => {
-    console.log("Bình luận cho đơn ứng tuyển:", application);
-    // TODO: Thêm điều hướng hoặc xử lý khi nhấn nút Bình luận
+  const handleComment = async (application) => {
+    try {
+      const token = await AsyncStorage.getItem("access_token");
+      const res = await authAPI(token).get("/jobs/");
+      const jobList = res.data;
+      console.log("Ứng tuyển job:", application.job);
+      const foundJob = jobList.find(
+        (j) => j.id === application.job || j.title === application.job?.title
+      );
+      if (foundJob) {
+        navigation.navigate("JobDetail", { job: foundJob });
+      } else {
+        alert("Không tìm thấy thông tin công việc.");
+      }
+    } catch (err) {
+      console.error("Lỗi khi lấy job:", err);
+    }
   };
   const renderApplications = () => (
     <>
@@ -95,6 +109,17 @@ const Profile = ({ navigation }) => {
               ? app.job
               : app.job?.title || "Không rõ công việc";
           const status = app.status || "Chưa rõ trạng thái";
+          // const jobTitle = (() => {
+          //   if (typeof app.job === "string") {
+          //     return app.job;
+          //   }
+          //   if (app.job && typeof app.job === "object") {
+          //     if (typeof app.job.title === "string") return app.job.title;
+          //     // Nếu có thể app.job là object phức tạp hơn, lấy 1 trường khác hoặc stringify fallback
+          //     return JSON.stringify(app.job);
+          //   }
+          //   return "Không rõ công việc";
+          // })();
 
           return (
             <View key={app.id || index} style={styles.card}>
@@ -212,7 +237,10 @@ const Profile = ({ navigation }) => {
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={{ flex: 1 }}
+      contentContainerStyle={{ alignItems: "center", padding: 20 }}
+    >
       <Image
         source={
           user.avatar
@@ -223,13 +251,8 @@ const Profile = ({ navigation }) => {
         }
         style={styles.avatar}
       />
-      <ScrollView
-        style={{ width: "100%" }}
-        contentContainerStyle={{ paddingBottom: 20 }}
-      >
-        {renderContent()}
-      </ScrollView>
-    </View>
+      {renderContent()}
+    </ScrollView>
   );
 };
 

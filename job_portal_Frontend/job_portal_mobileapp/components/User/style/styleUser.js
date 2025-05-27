@@ -7,6 +7,32 @@ const styles = StyleSheet.create({
     backgroundColor: "#f5f6fa",
     alignItems: "center",
   },
+  avatar: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    // Không cần marginLeft hoặc marginRight
+    // alignSelf: 'center' có thể thêm nếu không ở giữa
+    alignSelf: "center",
+  },
+  container: { padding: 16 },
+  label: { fontSize: 16, marginBottom: 8 },
+  picker: { height: 50, width: "100%", marginBottom: 16 },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    padding: 12,
+    marginBottom: 16,
+    borderRadius: 8,
+    textAlignVertical: "top",
+  },
+  button: {
+    backgroundColor: "#007bff",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  buttonText: { color: "#fff", fontWeight: "bold" },
   center: {
     flex: 1,
     justifyContent: "center",

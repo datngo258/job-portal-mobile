@@ -48,25 +48,49 @@ class JobSerializer(serializers.ModelSerializer):
                  'created_at', 'updated_at')
         read_only_fields = ('created_at', 'updated_at')
 
+# class ApplicationSerializer(serializers.ModelSerializer):
+#     job_id = serializers.PrimaryKeyRelatedField(
+#         queryset=Job.objects.all(), source='job', write_only=True
+#     )
+#     job = serializers.CharField(source='job.title', read_only=True)
+#     candidate = serializers.CharField(source='candidate.username', read_only=True)
+#
+#     class Meta:
+#         model = Application
+#         fields = ('id', 'job', 'job_id', 'candidate', 'cv', 'cover_letter', 'status', 'applied_at', 'updated_at')
+#         read_only_fields = ('applied_at', 'updated_at')
 class ApplicationSerializer(serializers.ModelSerializer):
     job_id = serializers.PrimaryKeyRelatedField(
         queryset=Job.objects.all(), source='job', write_only=True
     )
-    job = serializers.CharField(source='job.title', read_only=True)
+    job = serializers.SerializerMethodField()
     candidate = serializers.CharField(source='candidate.username', read_only=True)
-
     class Meta:
         model = Application
         fields = ('id', 'job', 'job_id', 'candidate', 'cv', 'cover_letter', 'status', 'applied_at', 'updated_at')
         read_only_fields = ('applied_at', 'updated_at')
-
+    def get_job(self, obj):
+        return {
+            "id": obj.job.id,
+            "title": obj.job.title
+        }
 class ReviewSerializer(serializers.ModelSerializer):
-    application = ApplicationSerializer(read_only=True)
+    application = serializers.PrimaryKeyRelatedField(queryset=Application.objects.all())
+    job_id = serializers.IntegerField(source='application.job.id', read_only=True)
+    job_title = serializers.CharField(source='application.job.title', read_only=True)
+    company_name = serializers.CharField(source='application.job.company.name', read_only=True)
+
+    candidate_id = serializers.IntegerField(source='application.candidate.id', read_only=True)
+    candidate_username = serializers.CharField(source='application.candidate.username', read_only=True)
 
     class Meta:
         model = Review
-        fields = ('id', 'application', 'rating', 'comment',
-                 'is_employer_review', 'created_at')
+        fields = (
+            'id', 'application', 'rating', 'comment',
+            'is_employer_review', 'created_at',
+            'job_id', 'job_title', 'company_name',
+            'candidate_id', 'candidate_username'  # 🛠️ Bổ sung 2 field này vào đây
+        )
         read_only_fields = ('created_at',)
 
 class ChatMessageSerializer(serializers.ModelSerializer):

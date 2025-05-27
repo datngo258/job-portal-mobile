@@ -22,6 +22,12 @@ export default StyleSheet.create({
   label: {
     fontWeight: "600",
     marginTop: 10,
+    color: "blue",
+  },
+  label1: {
+    color: "blue",
+    fontWeight: "600",
+    marginTop: 10,
   },
   text: {
     fontSize: 16,
@@ -37,7 +43,7 @@ export default StyleSheet.create({
     flex: 1,
   },
   btnBack: {
-    marginTop: 30,
+    marginTop: 8,
     backgroundColor: "#007bff",
     paddingVertical: 12,
     borderRadius: 6,
@@ -73,8 +79,17 @@ export default StyleSheet.create({
     shadowRadius: 6,
     elevation: 3,
   },
+  buttonText: {
+    alignItems: "center",
+    textAlign:"center",
+    marginTop: 8,
+    padding: 12,
+    backgroundColor: "blue",
+    borderRadius: 8,
+    alignItems: "center",
+  },
   applyBtn: {
-    marginTop: 20,
+    marginTop: 8,
     padding: 12,
     backgroundColor: "#28a745",
     borderRadius: 8,
