@@ -16,7 +16,7 @@ export default function JobDetail({ route, navigation }) {
   const [canComment, setCanComment] = useState(false);
   const [comments, setComments] = useState([]);
   const [completedApp, setCompletedApp] = useState(null);
-
+  console.log(job);
   useEffect(() => {
     const fetchComments = async () => {
       const token = await AsyncStorage.getItem("access_token");

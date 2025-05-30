@@ -40,7 +40,6 @@ const Profile = ({ navigation }) => {
           setLoading(false);
         }
       };
-
       fetchUserAndApplications();
     }, [])
   );

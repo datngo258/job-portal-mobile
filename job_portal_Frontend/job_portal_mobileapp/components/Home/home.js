@@ -25,14 +25,13 @@ export default function Home({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [user, dispatch] = useContext(MyConText);
-
+  // console.log(user);
   // Các state tìm kiếm
   const [jobType, setJobType] = useState("");
   const [workingHours, setWorkingHours] = useState("");
   const [salaryMin, setSalaryMin] = useState("");
   const [salaryMax, setSalaryMax] = useState("");
   const [location, setLocation] = useState("");
-
   // Lấy danh sách job từ API
   const fetchJobs = async () => {
     try {

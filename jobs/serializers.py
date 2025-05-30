@@ -40,6 +40,9 @@ class CompanySerializer(serializers.ModelSerializer):
 
 class JobSerializer(serializers.ModelSerializer):
     company = serializers.CharField(source='company.name', read_only=True)
+    latitude = serializers.FloatField(required=False, allow_null=True)
+    longitude = serializers.FloatField(required=False, allow_null=True)
+
     class Meta:
         model = Job
         fields = ('id', 'company', 'title', 'description', 'requirements',

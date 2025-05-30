@@ -9,6 +9,8 @@ export const endpoints = {
   applications: "/applications/",
   reviews: "/reviews/",
   statistics: "/statistics/",
+  employer_company: "/employer/companies/",
+  my_job: "/jobs/my_jobs/",
 };
 export const authAPI = (accesstoken) =>
   axios.create({

@@ -33,7 +33,6 @@ const Login = ({ navigation }) => {
         type: "login",
         payload: {
           username: user.data.username,
-          username: user.data.username,
           user_type: user.data.user_type,
           token: res.data.access_token,
         },
@@ -45,7 +44,6 @@ const Login = ({ navigation }) => {
         type: "set_applications",
         payload: appsRes.data,
       });
-      console.log(appsRes.data);
 
       navigation.navigate("Home");
     } catch (err) {
