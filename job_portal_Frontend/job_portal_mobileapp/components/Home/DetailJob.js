@@ -54,7 +54,7 @@ export default function JobDetail({ route, navigation }) {
 
     fetchComments();
   }, [job.id, applications, user?.id]);
-
+  console.log(job);
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>{job.title}</Text>
