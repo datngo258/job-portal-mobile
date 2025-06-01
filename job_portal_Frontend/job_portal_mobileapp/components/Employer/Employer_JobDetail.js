@@ -25,6 +25,7 @@ const Employees_JobDetail = ({ route, navigation }) => {
   const [job, setJob] = useState(null);
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
+  
 
   const fetchJobAndApplications = async () => {
     setLoading(true);

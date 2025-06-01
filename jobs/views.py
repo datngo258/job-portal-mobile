@@ -337,6 +337,23 @@ class ReviewViewSet(viewsets.ModelViewSet):
             return Response({"detail": "Bạn không có quyền xóa đánh giá này."}, status=status.HTTP_403_FORBIDDEN)
         instance.delete()
 
+    @action(detail=False, methods=['get'])
+    def by_job(self, request):
+        job_id = request.query_params.get('job_id')
+        if not job_id:
+            return Response({"detail": "Thiếu tham số job_id"}, status=400)
+
+        reviews = self.get_queryset().filter(application__job_id=job_id)
+
+        page = self.paginate_queryset(reviews)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(reviews, many=True)
+        return Response(serializer.data)
+
+
 class ChatMessageViewSet(viewsets.ModelViewSet):
     queryset = ChatMessage.objects.all()
     serializer_class = ChatMessageSerializer

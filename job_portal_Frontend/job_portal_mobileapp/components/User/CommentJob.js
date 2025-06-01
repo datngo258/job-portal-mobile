@@ -16,7 +16,9 @@ export default function CommentJob() {
   const [user] = useContext(MyConText);
   const navigation = useNavigation();
   const route = useRoute();
-  const { application } = route.params;
+  // const { application, userType } = route.params;
+  const { application, userType, applications, job } = route.params;
+  const [selectedAppId, setSelectedAppId] = useState(application?.id || null);
 
   const [rating, setRating] = useState("5");
   const [comment, setComment] = useState("");
@@ -26,7 +28,10 @@ export default function CommentJob() {
       Alert.alert("Lỗi", "Vui lòng nhập nội dung bình luận.");
       return;
     }
-
+    if (userType === "employer" && !selectedAppId) {
+      Alert.alert("Lỗi", "Vui lòng chọn ứng viên để đánh giá.");
+      return;
+    }
     try {
       const response = await fetch("http://10.0.2.2:8000/reviews/", {
         method: "POST",
@@ -35,16 +40,16 @@ export default function CommentJob() {
           Authorization: `Bearer ${user?.token}`,
         },
         body: JSON.stringify({
-          application: application.id,
+          application: userType === "employer" ? selectedAppId : application.id,
           rating: parseInt(rating),
           comment: comment,
-          is_employer_review: false,
+          is_employer_review: userType === "employer",
         }),
       });
 
       if (response.ok) {
         Alert.alert("Thành công", "Đã gửi bình luận.");
-        navigation.goBack();
+        navigation.navigate("Home");
       } else {
         const errorData = await response.json();
         console.error("Lỗi:", errorData);
@@ -68,6 +73,31 @@ export default function CommentJob() {
           <Picker.Item label={`${val} sao`} value={`${val}`} key={val} />
         ))}
       </Picker>
+
+      {/* Commment cho nhà tuyển dụng */}
+      {userType === "employer" && (
+        <>
+          <Text style={styles.label}>Chọn ứng viên để đánh giá:</Text>
+          <Picker
+            selectedValue={selectedAppId}
+            onValueChange={(itemValue) => setSelectedAppId(itemValue)}
+            style={styles.picker}
+          >
+            <Picker.Item label="-- Chọn ứng viên --" value={null} />
+            {applications
+              .filter(
+                (app) => app.job?.id === job.id && app.status === "completed"
+              )
+              .map((app) => (
+                <Picker.Item
+                  key={app.id}
+                  label={app.candidate}
+                  value={app.id}
+                />
+              ))}
+          </Picker>
+        </>
+      )}
 
       <Text style={styles.label}>Bình luận:</Text>
       <TextInput

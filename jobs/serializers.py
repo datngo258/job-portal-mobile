@@ -42,14 +42,20 @@ class JobSerializer(serializers.ModelSerializer):
     company = serializers.CharField(source='company.name', read_only=True)
     latitude = serializers.FloatField(required=False, allow_null=True)
     longitude = serializers.FloatField(required=False, allow_null=True)
+    creator_id = serializers.IntegerField(source='company.user.id', read_only=True)
+    creator_name = serializers.CharField(source='company.user.username', read_only=True)
 
     class Meta:
         model = Job
-        fields = ('id', 'company', 'title', 'description', 'requirements',
-                 'salary_min', 'salary_max', 'job_type', 'location',
-                 'latitude', 'longitude', 'working_hours', 'is_active',
-                 'created_at', 'updated_at')
+        fields = (
+            'id', 'company', 'title', 'description', 'requirements',
+            'salary_min', 'salary_max', 'job_type', 'location',
+            'latitude', 'longitude', 'working_hours', 'is_active',
+            'created_at', 'updated_at',
+            'creator_id', 'creator_name',  # Thêm ở đây
+        )
         read_only_fields = ('created_at', 'updated_at')
+
 
 # class ApplicationSerializer(serializers.ModelSerializer):
 #     job_id = serializers.PrimaryKeyRelatedField(
@@ -92,7 +98,7 @@ class ReviewSerializer(serializers.ModelSerializer):
             'id', 'application', 'rating', 'comment',
             'is_employer_review', 'created_at',
             'job_id', 'job_title', 'company_name',
-            'candidate_id', 'candidate_username'  # 🛠️ Bổ sung 2 field này vào đây
+            'candidate_id', 'candidate_username'  
         )
         read_only_fields = ('created_at',)
 

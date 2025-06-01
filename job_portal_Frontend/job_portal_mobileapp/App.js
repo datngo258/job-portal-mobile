@@ -142,6 +142,7 @@ export default function App() {
                 component={Employees_JobDetail}
                 options={{
                   title: "Employees_JobDetail",
+                  drawerItemStyle: { display: "none" },
                 }}
               />
             </Drawer.Navigator>

@@ -29,9 +29,11 @@ const Login = ({ navigation }) => {
       let user = await authAPI(res.data.access_token).get(
         endpoints["current_user"]
       );
+      console.log(user);
       dispatch({
         type: "login",
         payload: {
+          id: user.data.id,
           username: user.data.username,
           user_type: user.data.user_type,
           token: res.data.access_token,

@@ -6,7 +6,7 @@ import React, { useContext, useEffect, useState } from "react";
 import MyConText from "../../configs/MyConText";
 import ApplicationsContext from "../../components/Job/ApplicationsContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import { useFocusEffect } from "@react-navigation/native";
 dayjs.extend(relativeTime);
 
 export default function JobDetail({ route, navigation }) {
@@ -16,7 +16,57 @@ export default function JobDetail({ route, navigation }) {
   const [canComment, setCanComment] = useState(false);
   const [comments, setComments] = useState([]);
   const [completedApp, setCompletedApp] = useState(null);
-  console.log(job);
+  const [employerComments, setEmployerComments] = useState([]);
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchComments = async () => {
+        const token = await AsyncStorage.getItem("access_token");
+        try {
+          const res = await fetch("http://10.0.2.2:8000/reviews/", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          const data = await res.json();
+
+          const jobComments = data.filter(
+            (r) => Number(r.job_id) === Number(job.id) && !r.is_employer_review
+          );
+          setComments(jobComments);
+
+          const empComments = data.filter(
+            (r) => Number(r.job_id) === Number(job.id) && r.is_employer_review
+          );
+          setEmployerComments(empComments);
+
+          const matchedApp = applications.find(
+            (app) =>
+              Number(app.job?.id) === Number(job.id) &&
+              app.status === "completed" &&
+              app.candidate === user?.username
+          );
+
+          if (matchedApp) {
+            setCanComment(true);
+            setCompletedApp(matchedApp);
+          } else {
+            setCanComment(false);
+            setCompletedApp(null);
+          }
+
+          if (user.id === job.creator_id) {
+            setCanComment(true);
+          }
+        } catch (error) {
+          console.error("Lỗi lấy bình luận:", error);
+        }
+      };
+
+      fetchComments();
+    }, [job.id, applications, user?.id])
+  );
+
+  console.log("Người tạo:", job.creator_id, job.creator_name);
   useEffect(() => {
     const fetchComments = async () => {
       const token = await AsyncStorage.getItem("access_token");
@@ -47,6 +97,16 @@ export default function JobDetail({ route, navigation }) {
           setCanComment(false);
           setCompletedApp(null);
         }
+        // if (
+        //   user?.user_type === "employer" &&
+        //   Number(user?.id) === Number(job.creator_id)
+        // ) {
+        //   setCanComment(true);
+        // }
+        if (user.id === job.creator_id) {
+          console.log("có quyền comment ");
+          setCanComment(true);
+        }
       } catch (error) {
         console.error("Lỗi lấy bình luận:", error);
       }
@@ -54,7 +114,6 @@ export default function JobDetail({ route, navigation }) {
 
     fetchComments();
   }, [job.id, applications, user?.id]);
-  console.log(job);
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>{job.title}</Text>
@@ -130,7 +189,6 @@ export default function JobDetail({ route, navigation }) {
             {/* Hiển thị rating dạng sao */}
             <Text style={{ marginBottom: 5 }}>
               {"⭐".repeat(c.rating || 0)}{" "}
-              {/* Nếu rating null thì hiện 0 sao */}
             </Text>
 
             <Text style={styles.text}>{c.comment}</Text>
@@ -139,12 +197,47 @@ export default function JobDetail({ route, navigation }) {
       ) : (
         <Text style={styles.text}>Chưa có bình luận nào.</Text>
       )}
+      <Text style={styles.label1}>Đánh giá từ nhà tuyển dụng:</Text>
+      {employerComments.length > 0 ? (
+        employerComments.map((c) => (
+          <View
+            key={c.id}
+            style={{
+              padding: 10,
+              backgroundColor: "#e0f7fa",
+              borderRadius: 8,
+              marginBottom: 10,
+            }}
+          >
+            <Text style={{ fontWeight: "bold", marginBottom: 5 }}>
+              Nhà tuyển dụng đánh giá ứng viên:{" "}
+              <Text style={{ color: "#0077cc" }}>
+                {c.candidate_username || "Ẩn danh"}
+              </Text>
+            </Text>
+
+            {/* Hiển thị rating dạng sao */}
+            <Text style={{ marginBottom: 5 }}>
+              {"⭐".repeat(c.rating || 0)}{" "}
+            </Text>
+
+            <Text style={styles.text}>{c.comment}</Text>
+          </View>
+        ))
+      ) : (
+        <Text style={styles.text}>Chưa có đánh giá từ nhà tuyển dụng.</Text>
+      )}
       {/* Nút Viết bình luận nếu đủ điều kiện */}
-      {user?.user_type === "candidate" && canComment && (
+      {canComment && (
         <TouchableOpacity
           style={styles.button}
           onPress={() => {
-            navigation.navigate("CommentJob", { application: completedApp });
+            navigation.navigate("CommentJob", {
+              application: user.user_type === "candidate" ? completedApp : null,
+              job,
+              userType: user?.user_type,
+              applications, // truyền full danh sách để nhà tuyển dụng chọn
+            });
           }}
         >
           <Text style={styles.buttonText}>Viết bình luận</Text>
