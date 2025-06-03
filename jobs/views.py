@@ -370,7 +370,7 @@ class FollowViewSet(viewsets.ViewSet, generics.ListAPIView):
     serializer_class = FollowSerializer
     permission_classes = [permissions.IsAuthenticated]
     def get_queryset(self):
-        user = self.request.user  # phải lấy từ request.user, không phải self.user
+        user = self.request.user
         if user.user_type == "admin":
             return Follow.objects.all()
         elif user.user_type == "employer":

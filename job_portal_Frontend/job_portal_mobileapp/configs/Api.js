@@ -12,6 +12,8 @@ export const endpoints = {
   employer_company: "/employer/companies/",
   my_job: "/jobs/my_jobs/",
   jobs_admin: "/jobs-admin//",
+  follow: "/follows/",
+  toggle_follow: (companyId) => `/follows/${companyId}/toggle-follow/`,
 };
 export const authAPI = (accesstoken) =>
   axios.create({

@@ -28,6 +28,7 @@ import AdminUser from "./components/Admin/admin_user";
 import AdminCompany from "./components/Admin/admin_company";
 import AdminApplication from "./components/Admin/admin_application";
 import AdminReview from "./components/Admin/admin_review";
+import FollowScreen from "./components/Home/FollowCompany";
 const Drawer = createDrawerNavigator();
 export default function App() {
   const [user, dispatch] = useReducer(MyUserReducers, null);
@@ -97,7 +98,7 @@ export default function App() {
               {user?.user_type === "candidate" && (
                 <Drawer.Screen
                   name="FollowCompany"
-                  component={FollowCompany}
+                  component={FollowScreen}
                   options={{ title: "Follow" }}
                 />
               )}

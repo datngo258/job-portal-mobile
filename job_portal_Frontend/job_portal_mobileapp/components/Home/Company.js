@@ -12,7 +12,9 @@ import axios from "axios";
 import { MaterialIcons } from "@expo/vector-icons";
 import styles from "./style";
 import { useNavigation } from "@react-navigation/native";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
+// import { authAPI, endpoints } from "../../config/api";
+import { authAPI, endpoints } from "../../configs/Api";
 const { width } = Dimensions.get("window");
 const MAX_DESCRIPTION_LENGTH = 120;
 
@@ -20,8 +22,6 @@ const CompanyList = () => {
   const navigation = useNavigation();
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // State quản lý danh sách công ty đã follow (chỉ trong bộ nhớ)
   const [followedCompanies, setFollowedCompanies] = useState([]);
 
   useEffect(() => {
@@ -33,24 +33,47 @@ const CompanyList = () => {
         setCompanies(response.data);
       } catch (error) {
         console.error("Error fetching companies:", error);
-      } finally {
-        setLoading(false);
       }
     };
-    fetchCompanies();
-  }, []);
 
-  // Toggle trạng thái follow/unfollow
-  const toggleFollow = (companyId) => {
-    setFollowedCompanies((prev) => {
-      if (prev.includes(companyId)) {
-        return prev.filter((id) => id !== companyId); // unfollow
-      } else {
-        return [...prev, companyId]; // follow
+    const fetchFollowedCompanies = async () => {
+      try {
+        const token = await AsyncStorage.getItem("access_token");
+        console.log(token);
+        const res = await authAPI(token).get(endpoints.follow);
+        const followedIds = res.data.map((f) => f.company.id);
+        setFollowedCompanies(followedIds);
+      } catch (err) {
+        console.error("Lỗi khi lấy danh sách follow:", err);
       }
-    });
-  };
+    };
 
+    const loadData = async () => {
+      await fetchCompanies();
+      await fetchFollowedCompanies();
+      setLoading(false); // chuyển về đây để cả 2 hoàn tất mới ngừng loading
+    };
+
+    loadData();
+  }, []);
+  // Toggle trạng thái follow/unfollow
+  const toggleFollow = async (companyId) => {
+    try {
+      const token = await AsyncStorage.getItem("access_token");
+      // const token = await AsyncStorage.getItem("accessToken");
+      const res = await authAPI(token).post(endpoints.toggle_follow(companyId));
+      console.log(res.data.detail);
+      setFollowedCompanies((prev) => {
+        if (prev.includes(companyId)) {
+          return prev.filter((id) => id !== companyId);
+        } else {
+          return [...prev, companyId];
+        }
+      });
+    } catch (err) {
+      console.error("Lỗi toggle follow:", err.response?.data || err.message);
+    }
+  };
   const renderItem = ({ item }) => {
     const isFollowed = followedCompanies.includes(item.id);
 
