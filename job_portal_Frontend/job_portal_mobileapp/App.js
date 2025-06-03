@@ -5,7 +5,6 @@ import Home from "./components/Home/home";
 import Login from "./components/Login/login";
 import MyConText from "./configs/MyConText";
 import MyUserReducers from "./reducers/MyUserReducers";
-// import logout from "./components/Login/logout";
 import LogoutButton from "./components/Login/logout";
 import Register from "./components/Login/Register";
 import JobDetail from "./components/Home/DetailJob";
@@ -24,6 +23,11 @@ import { JobProvider } from "./components/Context/JobContext";
 import CreateJob from "./components/Employer/CreateJob";
 import EditJobScreen from "./components/Employer/Edit_Job/EditJob";
 import Employees_JobDetail from "./components/Employer/Employer_JobDetail";
+import AdminJob from "./components/Admin/admin_job";
+import AdminUser from "./components/Admin/admin_user";
+import AdminCompany from "./components/Admin/admin_company";
+import AdminApplication from "./components/Admin/admin_application";
+import AdminReview from "./components/Admin/admin_review";
 const Drawer = createDrawerNavigator();
 export default function App() {
   const [user, dispatch] = useReducer(MyUserReducers, null);
@@ -145,6 +149,35 @@ export default function App() {
                   drawerItemStyle: { display: "none" },
                 }}
               />
+              {user?.user_type === "admin" && (
+                <>
+                  <Drawer.Screen
+                    name="admin_company"
+                    component={AdminCompany}
+                    options={{ title: "Quản lý Công ty" }}
+                  />
+                  <Drawer.Screen
+                    name="admin_job"
+                    component={AdminJob}
+                    options={{ title: "Quản lý Công việc" }}
+                  />
+                  <Drawer.Screen
+                    name="admin_user"
+                    component={AdminUser}
+                    options={{ title: "Quản lý Người dùng" }}
+                  />
+                  <Drawer.Screen
+                    name="AdminApplication"
+                    component={AdminApplication}
+                    options={{ title: "Quản lý đơn ứng tuyển" }}
+                  />
+                  <Drawer.Screen
+                    name="AdminReview"
+                    component={AdminReview}
+                    options={{ title: "Quản lý đánh giá" }}
+                  />
+                </>
+              )}
             </Drawer.Navigator>
           </NavigationContainer>
         </MyConText.Provider>

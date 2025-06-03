@@ -62,7 +62,9 @@ const MyCompanyScreen = () => {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView
+      contentContainerStyle={(styles.container, { paddingBottom: 100 })}
+    >
       {company ? (
         <>
           <Text style={styles.title}>Thông tin công ty:</Text>

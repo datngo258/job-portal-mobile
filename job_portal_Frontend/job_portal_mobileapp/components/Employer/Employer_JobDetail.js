@@ -12,7 +12,8 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { authAPI, endpoints } from "../../configs/Api";
-
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 const STATUS_COLORS = {
   pending: "#FFA500", // cam
   accepted: "#4CAF50", // xanh lá
@@ -25,7 +26,6 @@ const Employees_JobDetail = ({ route, navigation }) => {
   const [job, setJob] = useState(null);
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
-  
 
   const fetchJobAndApplications = async () => {
     setLoading(true);
@@ -52,9 +52,11 @@ const Employees_JobDetail = ({ route, navigation }) => {
     }
   };
 
-  useEffect(() => {
-    fetchJobAndApplications();
-  }, [jobId]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchJobAndApplications();
+    }, [jobId])
+  );
 
   const changeStatus = async (appId, newStatus) => {
     try {

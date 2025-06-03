@@ -13,7 +13,7 @@ import styles from "../User/style/styleUser";
 import ApplicationsContext from "../Job/ApplicationsContext";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
-
+import { Alert } from "react-native";
 const Profile = ({ navigation }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -72,8 +72,10 @@ const Profile = ({ navigation }) => {
         type: "delete_application",
         payload: applicationId,
       });
+      Alert.alert("Thành công", "Đã xóa đơn ứng tuyển.");
     } catch (error) {
       console.error("Lỗi khi xóa đơn ứng tuyển:", error);
+      Alert.alert("Lỗi", "Không thể xóa đơn ứng tuyển. Vui lòng thử lại.");
     }
     console.log("Xóa đơn ứng tuyển với ID:", applicationId);
   };
@@ -94,6 +96,24 @@ const Profile = ({ navigation }) => {
     } catch (err) {
       console.error("Lỗi khi lấy job:", err);
     }
+  };
+  const confirmDelete = (applicationId) => {
+    Alert.alert(
+      "Xác nhận",
+      "Bạn có chắc muốn xóa đơn ứng tuyển này?",
+      [
+        {
+          text: "Hủy",
+          style: "cancel",
+        },
+        {
+          text: "Xóa",
+          style: "destructive",
+          onPress: () => handleDelete(applicationId),
+        },
+      ],
+      { cancelable: true }
+    );
   };
   const renderApplications = () => (
     <>
@@ -137,7 +157,7 @@ const Profile = ({ navigation }) => {
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.buttonDelete}
-                    onPress={() => handleDelete(app.id)}
+                    onPress={() => confirmDelete(app.id)}
                   >
                     <Text style={styles.buttonText}>Xóa</Text>
                   </TouchableOpacity>

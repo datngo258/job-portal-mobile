@@ -7,6 +7,7 @@ import MyConText from "../../configs/MyConText";
 import ApplicationsContext from "../../components/Job/ApplicationsContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
+import { authAPI, endpoints } from "../../configs/Api";
 dayjs.extend(relativeTime);
 
 export default function JobDetail({ route, navigation }) {
@@ -22,12 +23,8 @@ export default function JobDetail({ route, navigation }) {
       const fetchComments = async () => {
         const token = await AsyncStorage.getItem("access_token");
         try {
-          const res = await fetch("http://10.0.2.2:8000/reviews/", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          const data = await res.json();
+          const res = await authAPI(token).get(endpoints.reviews);
+          const data = res.data;
 
           const jobComments = data.filter(
             (r) => Number(r.job_id) === Number(job.id) && !r.is_employer_review
@@ -38,7 +35,6 @@ export default function JobDetail({ route, navigation }) {
             (r) => Number(r.job_id) === Number(job.id) && r.is_employer_review
           );
           setEmployerComments(empComments);
-
           const matchedApp = applications.find(
             (app) =>
               Number(app.job?.id) === Number(job.id) &&
@@ -65,18 +61,12 @@ export default function JobDetail({ route, navigation }) {
       fetchComments();
     }, [job.id, applications, user?.id])
   );
-
-  console.log("Người tạo:", job.creator_id, job.creator_name);
   useEffect(() => {
     const fetchComments = async () => {
       const token = await AsyncStorage.getItem("access_token");
       try {
-        const res = await fetch("http://10.0.2.2:8000/reviews/", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const data = await res.json();
+        const res = await authAPI(token).get(endpoints.reviews);
+        const data = res.data;
         const jobComments = data.filter(
           (r) => Number(r.job_id) === Number(job.id) && !r.is_employer_review
         );
@@ -97,12 +87,6 @@ export default function JobDetail({ route, navigation }) {
           setCanComment(false);
           setCompletedApp(null);
         }
-        // if (
-        //   user?.user_type === "employer" &&
-        //   Number(user?.id) === Number(job.creator_id)
-        // ) {
-        //   setCanComment(true);
-        // }
         if (user.id === job.creator_id) {
           console.log("có quyền comment ");
           setCanComment(true);
@@ -170,7 +154,7 @@ export default function JobDetail({ route, navigation }) {
         </View>
       </View>
 
-      <Text style={styles.label1}>Bình luận:</Text>
+      <Text style={styles.label1}>Bình luận của ứng viên:</Text>
       {comments.length > 0 ? (
         comments.map((c) => (
           <View
@@ -261,6 +245,7 @@ export default function JobDetail({ route, navigation }) {
       >
         <Text style={styles.btnText}>Quay về Home</Text>
       </TouchableOpacity>
+      <View style={{ height: 100 }} />
     </ScrollView>
   );
 }

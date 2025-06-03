@@ -15,6 +15,8 @@ import MyConText from "../../configs/MyConText";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import JobDetail from "./DetailJob";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 dayjs.extend(relativeTime);
 import "dayjs/locale/vi";
 dayjs.locale("vi");
@@ -50,9 +52,11 @@ export default function Home({ navigation }) {
     }
   };
 
-  useEffect(() => {
-    fetchJobs();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchJobs();
+    }, [])
+  );
 
   // Hàm lọc job theo điều kiện
   const filterJobs = () => {

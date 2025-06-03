@@ -78,7 +78,7 @@ class AdminCompanyViewSet(viewsets.ViewSet , generics.ListAPIView):
         try:
             company = self.get_object()
             company.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT,data={"detail": "Thành công!"} )
+            return Response(status=status.HTTP_204_NO_CONTENT)
         except Company.DoesNotExist:
             return Response({"detail": "Company not found."}, status=status.HTTP_404_NOT_FOUND)
     # Action để duyệt công ty (approve)

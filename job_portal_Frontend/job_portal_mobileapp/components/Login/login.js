@@ -29,7 +29,6 @@ const Login = ({ navigation }) => {
       let user = await authAPI(res.data.access_token).get(
         endpoints["current_user"]
       );
-      console.log(user);
       dispatch({
         type: "login",
         payload: {
