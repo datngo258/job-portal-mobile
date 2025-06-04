@@ -49,7 +49,7 @@ export default function CommentJob() {
 
       if (response.ok) {
         Alert.alert("Thành công", "Đã gửi bình luận.");
-        navigation.navigate("Home");
+        navigation.navigate("JobDetail", { job });
       } else {
         const errorData = await response.json();
         console.error("Lỗi:", errorData);

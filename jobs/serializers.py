@@ -88,7 +88,6 @@ class ReviewSerializer(serializers.ModelSerializer):
     job_id = serializers.IntegerField(source='application.job.id', read_only=True)
     job_title = serializers.CharField(source='application.job.title', read_only=True)
     company_name = serializers.CharField(source='application.job.company.name', read_only=True)
-
     candidate_id = serializers.IntegerField(source='application.candidate.id', read_only=True)
     candidate_username = serializers.CharField(source='application.candidate.username', read_only=True)
 

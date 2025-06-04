@@ -17,12 +17,15 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { authAPI, endpoints } from "../../configs/Api";
 const { width } = Dimensions.get("window");
 const MAX_DESCRIPTION_LENGTH = 120;
+import { useContext } from "react";
+import MyConText from "../../configs/MyConText";
 
 const CompanyList = () => {
   const navigation = useNavigation();
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [followedCompanies, setFollowedCompanies] = useState([]);
+  const [user] = useContext(MyConText);
 
   useEffect(() => {
     const fetchCompanies = async () => {
@@ -39,7 +42,6 @@ const CompanyList = () => {
     const fetchFollowedCompanies = async () => {
       try {
         const token = await AsyncStorage.getItem("access_token");
-        console.log(token);
         const res = await authAPI(token).get(endpoints.follow);
         const followedIds = res.data.map((f) => f.company.id);
         setFollowedCompanies(followedIds);
@@ -49,13 +51,50 @@ const CompanyList = () => {
     };
 
     const loadData = async () => {
+      setLoading(true);
       await fetchCompanies();
-      await fetchFollowedCompanies();
-      setLoading(false); // chuyển về đây để cả 2 hoàn tất mới ngừng loading
+      if (user) {
+        await fetchFollowedCompanies();
+      } else {
+        setFollowedCompanies([]);
+      }
+      setLoading(false);
     };
 
     loadData();
-  }, []);
+  }, [user]);
+  // useEffect(() => {
+  //   const fetchCompanies = async () => {
+  //     try {
+  //       const response = await axios.get(
+  //         "http://10.0.2.2:8000/candidate/companies/"
+  //       );
+  //       setCompanies(response.data);
+  //     } catch (error) {
+  //       console.error("Error fetching companies:", error);
+  //     }
+  //   };
+
+  //   const fetchFollowedCompanies = async () => {
+  //     try {
+  //       const token = await AsyncStorage.getItem("access_token");
+  //       console.log(token);
+  //       const res = await authAPI(token).get(endpoints.follow);
+  //       const followedIds = res.data.map((f) => f.company.id);
+  //       setFollowedCompanies(followedIds);
+  //     } catch (err) {
+  //       console.error("Lỗi khi lấy danh sách follow:", err);
+  //     }
+  //   };
+
+  //   const loadData = async () => {
+  //     await fetchCompanies();
+  //     await fetchFollowedCompanies();
+  //     setLoading(false); // chuyển về đây để cả 2 hoàn tất mới ngừng loading
+  //   };
+
+  //   loadData();
+  // }, []);
   // Toggle trạng thái follow/unfollow
   const toggleFollow = async (companyId) => {
     try {

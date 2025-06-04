@@ -153,7 +153,7 @@ export default function Home({ navigation }) {
         />
         <TextInput
           style={styles.input}
-          placeholder="Số giờ làm"
+          placeholder="Số giờ làm min"
           value={workingHours}
           onChangeText={setWorkingHours}
           keyboardType="numeric"
